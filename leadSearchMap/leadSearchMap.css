@@ -1,0 +1,263 @@
+/* 지도 컨테이너 */
+.map-container {
+    width: 100%;
+    height: 500px;
+    position: relative;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.map-div {
+    width: 100%;
+    height: 100%;
+}
+
+/* 검색 필터 영역 */
+.search-filters {
+    background-color: #f3f2f2;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+/* 검색 결과 요약 */
+.search-summary {
+    padding: 0.5rem 1rem;
+    background-color: #e8f4e8;
+    border-left: 3px solid #2e844a;
+    border-radius: 4px;
+}
+
+/* 지도 컨트롤 버튼 */
+.map-control-btn {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    border: 2px solid #E5E5E5;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    color: #54698D;
+}
+
+.map-control-btn:hover {
+    border-color: #1B96FF;
+    background: #F3F9FF;
+    color: #1B96FF;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(27, 150, 255, 0.2);
+}
+
+.map-control-btn:active {
+    transform: scale(0.95);
+}
+
+/* 홈 버튼 (왼쪽 상단) */
+.home-btn {
+    top: 12px;
+    left: 12px;
+}
+
+/* 숙박업소 마커 */
+:host .marker.lodging {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+    border: 3px solid white;
+    cursor: pointer;
+}
+
+:host .marker.lodging .marker-icon {
+    color: white;
+    font-size: 24px;
+    z-index: 2;
+}
+
+/* 객실수 배지 */
+:host .marker.lodging .room-count {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #080707;
+    color: white;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    border: 2px solid white;
+    padding: 0 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 마커 호버 효과 */
+:host .marker.lodging:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* 마커 팝업 커스터마이징 */
+:host .leaflet-popup-content-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: none;
+}
+
+:host .leaflet-popup-content {
+    margin: 16px;
+    line-height: 1.4;
+    font-size: 13px;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+    min-width: 200px;
+}
+
+:host .leaflet-popup-tip {
+    background: #fff;
+}
+
+/* 범례 */
+.legend-container {
+    background-color: #f3f2f2;
+    padding: 0.75rem;
+    border-radius: 4px;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.legend-marker.legend-pension {
+    background-color: #10B981;
+}
+
+.legend-marker.legend-minbak {
+    background-color: #3B82F6;
+}
+
+.legend-icon {
+    font-size: 20px;
+}
+
+.legend-label {
+    font-size: 0.875rem;
+    color: #3e3e3c;
+}
+
+/* 숙박업소 리스트 */
+.lodging-list-container {
+    margin-top: 1.5rem;
+}
+
+.lodging-list {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 업종 배지 */
+.indutype-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.indutype-icon {
+    font-size: 16px;
+}
+
+.indutype-icon.pension-icon::before {
+    content: '🏡';
+}
+
+.indutype-icon.minbak-icon::before {
+    content: '🏠';
+}
+
+/* 액션 버튼 */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* 팝업 버튼 스타일 */
+.popup-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .map-container {
+        height: 350px;
+    }
+    
+    .search-filters .slds-grid {
+        display: block;
+    }
+    
+    .search-filters .slds-col {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-filters .slds-align-bottom {
+        margin-top: 0 !important;
+    }
+    
+    .search-filters lightning-button {
+        width: 100%;
+    }
+    
+    .legend-items {
+        justify-content: center;
+    }
+    
+    .map-control-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .hide-on-mobile {
+        display: none !important;
+    }
+    
+    .lodging-list {
+        max-height: 400px;
+    }
+}

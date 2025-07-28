@@ -1,0 +1,227 @@
+<template>
+    <lightning-card title="숙박업소 리드 검색" icon-name="standard:lead">
+        <div class="slds-p-horizontal_medium">
+            <!-- 검색 필터 -->
+            <div class="search-filters slds-m-bottom_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-3">
+                        <lightning-combobox
+                            name="sigun"
+                            label="시/군"
+                            value={selectedSigun}
+                            placeholder="시/군 선택"
+                            options={sigunOptions}
+                            onchange={handleSigunChange}>
+                        </lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <lightning-combobox
+                            name="induType"
+                            label="업종"
+                            value={selectedInduType}
+                            placeholder="전체"
+                            options={induTypeOptions}
+                            onchange={handleInduTypeChange}>
+                        </lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3 slds-align-bottom">
+                        <lightning-button
+                            variant="brand"
+                            label="검색"
+                            title="숙박업소 검색"
+                            icon-name="utility:search"
+                            onclick={handleSearch}
+                            disabled={isSearchDisabled}
+                            class="slds-m-top_small">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 검색 결과 요약 -->
+            <template if:true={totalCount}>
+                <div class="search-summary slds-m-bottom_small">
+                    <p class="slds-text-body_regular">
+                        <strong>{totalCount}개</strong>의 숙박업소가 검색되었습니다.
+                    </p>
+                </div>
+            </template>
+            
+            <!-- 로딩 스피너 -->
+            <template if:true={isLoading}>
+                <div class="slds-text-align_center slds-m-bottom_medium">
+                    <lightning-spinner alternative-text="로딩 중..." size="small"></lightning-spinner>
+                </div>
+            </template>
+            
+            <!-- 오류 메시지 -->
+            <template if:true={errorMessage}>
+                <div class="slds-m-bottom_medium">
+                    <div class="slds-notify slds-notify_alert slds-alert_error">
+                        <span class="slds-assistive-text">오류</span>
+                        <h2>{errorMessage}</h2>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- 지도 영역 -->
+            <div class="map-container">
+                <div class="map-div" lwc:dom="manual"></div>
+                
+                <!-- 홈 버튼 (왼쪽 상단) -->
+                <button class="map-control-btn home-btn" onclick={goToHome} title="기본 위치로">
+                    <lightning-icon icon-name="utility:home" size="small"></lightning-icon>
+                </button>
+            </div>
+            
+            <!-- 범례 -->
+            <template if:true={isMapInitialized}>
+                <div class="legend-container slds-m-top_medium">
+                    <div class="slds-text-title_caps slds-m-bottom_x-small">업종 범례</div>
+                    <div class="legend-items">
+                        <span class="legend-item">
+                            <span class="legend-marker legend-pension">
+                                <span class="legend-icon">🏡</span>
+                            </span>
+                            <span class="legend-label">펜션</span>
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-marker legend-minbak">
+                                <span class="legend-icon">🏠</span>
+                            </span>
+                            <span class="legend-label">민박</span>
+                        </span>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- 숙박업소 리스트 -->
+            <template if:false={hasNoResults}>
+                <template if:true={displayedLodgings.length}>
+                    <div class="lodging-list-container slds-m-top_large">
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <lightning-icon icon-name="standard:location" size="small"></lightning-icon>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>숙박업소 목록</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body">
+                                <div class="lodging-list" onscroll={handleScroll}>
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th class="slds-text-title_caps" scope="col">
+                                                    <div class="slds-truncate" title="업소명">업소명</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col">
+                                                    <div class="slds-truncate" title="업종">업종</div>
+                                                </th>
+                                                <th class="slds-text-title_caps hide-on-mobile" scope="col">
+                                                    <div class="slds-truncate" title="주소">주소</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col">
+                                                    <div class="slds-truncate" title="객실수">객실</div>
+                                                </th>
+                                                <th class="slds-text-title_caps hide-on-mobile" scope="col">
+                                                    <div class="slds-truncate" title="전화번호">전화번호</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col">
+                                                    <div class="slds-truncate" title="액션">액션</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={displayedLodgings} for:item="lodging" for:index="index">
+                                                <tr key={lodging.bizName} class="slds-hint-parent">
+                                                    <td data-label="업소명">
+                                                        <div class="slds-truncate" title={lodging.bizName}>
+                                                            {lodging.bizName}
+                                                        </div>
+                                                    </td>
+                                                    <td data-label="업종">
+                                                        <div class="slds-truncate">
+                                                            <span class="indutype-badge">
+                                                                <span class={lodging.iconClass}></span>
+                                                                {lodging.induType}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td data-label="주소" class="hide-on-mobile">
+                                                        <div class="slds-truncate" title={lodging.roadAddr}>
+                                                            {lodging.roadAddr}
+                                                        </div>
+                                                    </td>
+                                                    <td data-label="객실수">
+                                                        <div class="slds-truncate">
+                                                            {lodging.roomCnt}개
+                                                        </div>
+                                                    </td>
+                                                    <td data-label="전화번호" class="hide-on-mobile">
+                                                        <div class="slds-truncate">
+                                                            {lodging.telNo}
+                                                        </div>
+                                                    </td>
+                                                    <td data-label="액션">
+                                                        <div class="action-buttons">
+                                                            <button 
+                                                                class="slds-button slds-button_icon slds-button_icon-border-filled"
+                                                                onclick={handleViewLocation}
+                                                                data-index={index}
+                                                                title="위치 보기">
+                                                                <lightning-icon 
+                                                                    icon-name="utility:location" 
+                                                                    size="x-small"
+                                                                    alternative-text="위치 보기">
+                                                                </lightning-icon>
+                                                            </button>
+                                                            <button 
+                                                                class="slds-button slds-button_icon slds-button_icon-border-filled slds-m-left_x-small"
+                                                                onclick={handleConvertToLead}
+                                                                data-index={index}
+                                                                title="리드 전환">
+                                                                <lightning-icon 
+                                                                    icon-name="utility:lead" 
+                                                                    size="x-small"
+                                                                    alternative-text="리드 전환">
+                                                                </lightning-icon>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                    
+                                    <!-- 추가 로딩 표시 -->
+                                    <template if:true={isLoadingMore}>
+                                        <div class="slds-text-align_center slds-p-vertical_small">
+                                            <lightning-spinner alternative-text="추가 로딩 중..." size="small"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            
+            <!-- 결과 없음 -->
+            <template if:true={hasNoResults}>
+                <div class="slds-align_absolute-center slds-p-vertical_large">
+                    <div class="slds-text-align_center">
+                        <lightning-icon icon-name="standard:location" size="large"></lightning-icon>
+                        <p class="slds-text-heading_medium slds-p-top_medium">검색 결과가 없습니다.</p>
+                        <p class="slds-text-body_regular slds-text-color_weak">다른 지역이나 업종으로 검색해보세요.</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
